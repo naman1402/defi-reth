@@ -95,6 +95,8 @@ contract SwapRocketPool {
     /// @dev The caller must send ETH with this transaction.
     function swapEthToReth() external payable {
         // Write your code here
+        depositPool.deposit{value: msg.value}();
+        
     }
 
     /// @notice Swaps rETH to ETH by burning rETH.
@@ -102,5 +104,9 @@ contract SwapRocketPool {
     /// @dev The caller must approve the contract to transfer the specified rETH amount.
     function swapRethToEth(uint256 rEthAmount) external {
         // Write your code here
+        reth.transferFrom(msg.sender, address(this), rEthAmount);
+        reth.burn(rEthAmount);
     }
+
+    receive() external payable{}
 }
