@@ -37,6 +37,11 @@ contract SwapRocketPool {
         returns (uint256 rEthAmount, uint256 fee)
     {
         // Write your code here
+        uint256 depositFee = protocolSettings.getDepositFee();
+        fee = ethAmount * depositFee / CALC_BASE;
+        // Whatever user deposit, fee is reducted and the remaining is converted to rEth.
+        ethAmount -= fee;
+        rEthAmount = reth.getRethValue(ethAmount);
     }
 
     /// @notice Calculates the amount of ETH for a given rETH amount.
@@ -48,6 +53,8 @@ contract SwapRocketPool {
         returns (uint256 ethAmount)
     {
         // Write your code here
+        // When swapping from reth to eth, the fee is not deducted from the user as he is withdrawing his staking.
+        ethAmount = reth.getEthValue(rEthAmount);
     }
 
     /// @notice Retrieves the deposit availability status and maximum deposit amount.
@@ -55,12 +62,24 @@ contract SwapRocketPool {
     /// @return maxDepositAmount The maximum allowed deposit amount in ETH.
     function getAvailability() external view returns (bool, uint256) {
         // Write your code here
+        bool depositEnabled = protocolSettings.getDepositEnabled();
+        uint256 maxDepositAmount = depositPool.getMaximumDepositAmount();
+        return (depositEnabled, maxDepositAmount);
     }
 
     /// @notice Retrieves the deposit delay for rETH deposits.
     /// @return depositDelay The delay in blocks before deposits are processed.
     function getDepositDelay() public view returns (uint256) {
         // Write your code here
+        // The key used in the storage function call is the same as the RocketTokenRETH contract. 
+        uint256 depositDelay = rStorage.getUint(
+            keccak256(
+                abi.encodePacked(
+                    keccak256("dao.protocol.setting.network"),
+                    "network.reth.deposit.delay"
+                )
+            )
+        );
     }
 
     /// @notice Retrieves the block number of the last deposit made by a user.
@@ -68,6 +87,8 @@ contract SwapRocketPool {
     /// @return lastDepositBlock The block number of the user's last deposit.
     function getLastDepositBlock(address user) public view returns (uint256) {
         // Write your code here
+        uint256 lastDepositBlock = rStorage.getUint(keccak256(abi.encodePacked("user.deposit.block", user)));
+        return lastDepositBlock;
     }
 
     /// @notice Swaps ETH to rETH by depositing ETH into the RocketPool deposit pool.
