@@ -174,7 +174,7 @@ contract FlashLev is Pay, Token, AaveHelper, SwapHelper {
         uint256 coinAmount = getDebt(address(this), params.coin);
         flashLoan({
             token: params.coin,
-            amount: params.coinAmount,
+            amount: params.colAmount,
             data: abi.encode(
                 FlashLoanData({
                     coin: params.coin,
