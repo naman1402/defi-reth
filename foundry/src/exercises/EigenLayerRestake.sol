@@ -51,6 +51,10 @@ contract EigenLayerRestake {
     ///      and then deposits it into the EigenLayer strategy. The user receives shares in return.
     function deposit(uint256 rethAmount) external returns (uint256 shares) {
         // Write your code here
+        reth.transferFrom(msg.sender, address(this), rethAmount);
+        reth.approve(address(strategyManager), rethAmount);
+
+        shares = strategyManager.depositIntoStrategy(address(strategy), RETH, rethAmount);
     }
 
     /// @notice Delegate staking to a specific operator
@@ -59,6 +63,15 @@ contract EigenLayerRestake {
     ///      The operator will perform actions on behalf of the staker.
     function delegate(address operator) external auth {
         // Write your code here
+        delegationManager.delegatedTo(
+            operator, 
+            IDelegationManager.SignatureWithExpiry({
+                signature: "",
+                expiry: 0
+            }),
+            bytes32(uint256(0))
+        );
+
     }
 
     /// @notice Undelegate from the current operator and queue a withdrawal
@@ -71,6 +84,7 @@ contract EigenLayerRestake {
         returns (bytes32[] memory withdrawalRoot)
     {
         // Write your code here
+        withdrawalRoot = delegationManager.undelegate(address(this));
     }
 
     /// @notice Withdraw staked RETH from an operator after undelegation
