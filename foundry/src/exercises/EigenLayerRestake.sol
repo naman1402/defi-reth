@@ -98,6 +98,33 @@ contract EigenLayerRestake {
         auth
     {
         // Write your code here
+        address[] memory strategies = new address[](1);
+        strategies[0] = address(strategy);
+
+        uint256[] memory _shares = new uint256[](1);
+        _shares[0] = shares;
+
+        address[] memory tokens = new address[](1);
+        tokens[0] = RETH;
+
+        // function completeQueuedWithdrawal(Withdrawal withdrawal,
+        //     address[] tokens,
+        //     uint256 middlewareTimesIndex,
+        //     bool receiveAsTokens)
+        delegationManager.completeQueuedWithdrawal(
+            IDelegationManager.Withdrawal({
+                stacker: address(this),
+                delegatedTo: operator,
+                withdrawer: address(this),
+                nonce: 0,
+                startBlock: startBlockNum,
+                strategies: strategies,
+                shares: _shares
+            }), 
+            tokens, 
+            0, 
+            true
+        );
     }
 
     /* Notes on claim rewards
@@ -156,6 +183,7 @@ contract EigenLayerRestake {
         external
     {
         // Write your code here
+        rewardsCoordinator.processClaim(claim, address(this));
     }
 
     /// @notice Get the number of shares held in the strategy for the current staker
